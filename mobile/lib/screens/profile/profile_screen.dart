@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../config/app_palette.dart';
+import '../../config/app_styles.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user.dart';
+import '../../widgets/common_widgets.dart';
+import '../../widgets/theme_selector.dart';
 import '../auth/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -26,110 +30,116 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
-    final primary = Theme.of(context).colorScheme.primary;
+    final palette = context.palette;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 12),
-          Hero(
-            tag: 'profile_avatar',
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 400),
-              curve: Curves.easeInOut,
-              width: _editing ? 90 : 100,
-              height: _editing ? 90 : 100,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [primary, primary.withValues(alpha: 0.7)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: primary.withValues(alpha: 0.3),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
+          AppCard(
+            child: Column(
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeOutCubic,
+                  width: _editing ? 80 : 96,
+                  height: _editing ? 80 : 96,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primary, AppColors.primaryDark],
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: AppShadows.card,
                   ),
-                ],
-              ),
-              child: Center(
-                child: Text(
-                  user?.name.isNotEmpty == true ? user!.name[0].toUpperCase() : '?',
-                  style: const TextStyle(fontSize: 40, color: Colors.white, fontWeight: FontWeight.bold),
+                  child: Center(
+                    child: Text(
+                      user?.name.isNotEmpty == true ? user!.name[0].toUpperCase() : '?',
+                      style: TextStyle(
+                        fontSize: _editing ? 32 : 38,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 350),
-            transitionBuilder: (child, anim) => FadeTransition(
-              opacity: anim,
-              child: SlideTransition(
-                position: Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(anim),
-                child: child,
-              ),
-            ),
-            child: !_editing
-                ? Column(
-                    key: const ValueKey('view'),
-                    children: [
-                      Text(user?.name ?? '', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
-                      Text(user?.email ?? '', style: TextStyle(color: Colors.grey.shade600)),
-                      const SizedBox(height: 24),
-                      Card(
-                        child: Column(
+                const SizedBox(height: 16),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: !_editing
+                      ? Column(
+                          key: const ValueKey('view'),
                           children: [
-                            ListTile(
-                              leading: Icon(Icons.edit_outlined, color: primary),
-                              title: const Text('Edytuj profil'),
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () => setState(() => _editing = true),
+                            Text(
+                              user?.name ?? '',
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(user?.email ?? '', style: TextStyle(color: context.palette.textSecondary)),
+                          ],
+                        )
+                      : Column(
+                          key: const ValueKey('edit'),
+                          children: [
+                            TextField(
+                              controller: _nameCtrl,
+                              decoration: const InputDecoration(labelText: 'Imię'),
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: !_editing
+                ? AppCard(
+                    key: const ValueKey('actions-view'),
+                    onTap: () => setState(() => _editing = true),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.edit_outlined, color: AppColors.primary),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Edytuj profil',
+                            style: TextStyle(fontWeight: FontWeight.w600, color: palette.textPrimary),
+                          ),
+                        ),
+                        Icon(Icons.chevron_right_rounded, color: palette.textMuted),
+                      ],
+                    ),
                   )
-                : Column(
-                    key: const ValueKey('edit'),
-                    children: [
-                      TextField(
-                        controller: _nameCtrl,
-                        decoration: const InputDecoration(labelText: 'Imię'),
-                      ),
-                      const SizedBox(height: 16),
-                      auth.isLoading
-                          ? const CircularProgressIndicator()
-                          : Row(
-                              children: [
-                                Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: () async {
-                                      final ok = await auth.updateProfile(_nameCtrl.text.trim());
-                                      if (ok && mounted) setState(() => _editing = false);
-                                    },
-                                    child: const Text('Zapisz'),
-                                  ),
+                : AppCard(
+                    key: const ValueKey('actions-edit'),
+                    child: auth.isLoading
+                        ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                        : Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    final ok = await auth.updateProfile(_nameCtrl.text.trim());
+                                    if (ok && mounted) setState(() => _editing = false);
+                                  },
+                                  child: const Text('Zapisz'),
                                 ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: OutlinedButton(
-                                    onPressed: () => setState(() => _editing = false),
-                                    child: const Text('Anuluj'),
-                                  ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () => setState(() => _editing = false),
+                                  child: const Text('Anuluj'),
                                 ),
-                              ],
-                            ),
-                    ],
+                              ),
+                            ],
+                          ),
                   ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
+          const ThemeSelector(),
+          const SizedBox(height: 24),
           OutlinedButton.icon(
             onPressed: () async {
               await auth.logout();
@@ -140,11 +150,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 (route) => false,
               );
             },
-            icon: const Icon(Icons.logout, color: Colors.red),
-            label: const Text('Wyloguj', style: TextStyle(color: Colors.red)),
+            icon: const Icon(Icons.logout_rounded, color: AppColors.error),
+            label: const Text('Wyloguj', style: TextStyle(color: AppColors.error)),
             style: OutlinedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 48),
-              side: BorderSide(color: Colors.red.shade200),
+              side: BorderSide(color: AppColors.error.withValues(alpha: 0.55)),
+              backgroundColor: palette.dangerSoft,
+              foregroundColor: AppColors.error,
             ),
           ),
         ],

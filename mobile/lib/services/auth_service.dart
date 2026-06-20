@@ -35,32 +35,48 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/auth/register'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'name': name, 'email': email, 'password': password}),
-    );
-    final data = jsonDecode(res.body);
-    if (res.statusCode == 201) {
-      await _saveToken(data['token']);
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'name': name, 'email': email, 'password': password}),
+      );
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      if (res.statusCode == 201) {
+        await _saveToken(data['token']);
+        return data;
+      }
+      return {
+        'success': false,
+        'message': data['message'] ?? 'Błąd rejestracji',
+      };
+    } catch (_) {
+      return {'success': false, 'message': 'Błąd połączenia z serwerem'};
     }
-    return data;
   }
 
   static Future<Map<String, dynamic>> login({
     required String email,
     required String password,
   }) async {
-    final res = await http.post(
-      Uri.parse('$baseUrl/auth/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
-    );
-    final data = jsonDecode(res.body);
-    if (res.statusCode == 200) {
-      await _saveToken(data['token']);
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
+      );
+      final data = jsonDecode(res.body) as Map<String, dynamic>;
+      if (res.statusCode == 200 && data['success'] == true) {
+        await _saveToken(data['token']);
+        return data;
+      }
+      return {
+        'success': false,
+        'message': data['message'] ?? 'Nieprawidłowy email lub hasło',
+      };
+    } catch (_) {
+      return {'success': false, 'message': 'Błąd połączenia z serwerem'};
     }
-    return data;
   }
 
   static Future<User?> getMe() async {

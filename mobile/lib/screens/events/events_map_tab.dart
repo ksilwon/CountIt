@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import '../../config/app_styles.dart';
 import '../../config/constants.dart';
 import '../../models/event.dart';
+import '../../widgets/common_widgets.dart';
 import 'event_detail_screen.dart';
 
 class EventsMapTab extends StatelessWidget {
@@ -20,22 +22,14 @@ class EventsMapTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
 
     if (events.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.map_outlined, size: 64, color: Colors.grey.shade400),
-            const SizedBox(height: 12),
-            Text(
-              'Brak wydarzeń na mapie',
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
-            ),
-          ],
-        ),
+      return const EmptyState(
+        icon: Icons.map_outlined,
+        title: 'Brak wydarzeń na mapie',
+        subtitle: 'Wydarzenia z lokalizacją pojawią się tutaj',
       );
     }
 
@@ -61,29 +55,46 @@ class EventsMapTab extends StatelessWidget {
           ],
         ),
         Positioned(
-          top: 12,
-          left: 12,
-          right: 12,
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Row(
-                children: [
-                  Icon(Icons.map, color: Theme.of(context).colorScheme.primary),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '${events.length} wydarzeń · OpenStreetMap',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
+          top: 16,
+          left: 16,
+          right: 16,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.surface.withValues(alpha: 0.95),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              boxShadow: AppShadows.soft,
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: onRefresh,
-                    tooltip: 'Odśwież',
+                  child: const Icon(Icons.map_rounded, color: AppColors.primary, size: 18),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${events.length} wydarzeń',
+                        style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                      ),
+                      const Text('OpenStreetMap', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
+                  onPressed: onRefresh,
+                  tooltip: 'Odśwież',
+                ),
+              ],
             ),
           ),
         ),
@@ -103,8 +114,8 @@ class EventsMapTab extends StatelessWidget {
   Marker _buildMarker(BuildContext context, Event event) {
     return Marker(
       point: LatLng(event.latitude, event.longitude),
-      width: 48,
-      height: 48,
+      width: 56,
+      height: 56,
       child: GestureDetector(
         onTap: () => Navigator.push(
           context,
@@ -113,34 +124,26 @@ class EventsMapTab extends StatelessWidget {
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
+                gradient: const LinearGradient(colors: [AppColors.primary, AppColors.primaryDark]),
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.25),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                boxShadow: AppShadows.card,
+                border: Border.all(color: Colors.white, width: 2),
               ),
-              child: Text(
-                categoryEmoji[event.category] ?? '📦',
-                style: const TextStyle(fontSize: 18),
-              ),
+              child: Text(categoryEmoji[event.category] ?? '📦', style: const TextStyle(fontSize: 18)),
             ),
+            const SizedBox(height: 4),
             Container(
-              margin: const EdgeInsets.only(top: 2),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300),
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: AppShadows.soft,
               ),
               child: Text(
                 event.locationName,
-                style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w600),
+                style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
               ),
             ),
           ],

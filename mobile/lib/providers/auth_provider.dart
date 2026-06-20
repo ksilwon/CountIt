@@ -4,10 +4,12 @@ import '../services/auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   User? _user;
+  bool _isInitializing = true;
   bool _isLoading = false;
   String? _error;
 
   User? get user => _user;
+  bool get isInitializing => _isInitializing;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isLoggedIn => _user != null;
@@ -18,9 +20,11 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> tryAutoLogin() async {
-    _setLoading(true);
+    _isInitializing = true;
+    notifyListeners();
     _user = await AuthService.getMe();
-    _setLoading(false);
+    _isInitializing = false;
+    notifyListeners();
   }
 
   Future<bool> register(String name, String email, String password) async {
@@ -46,7 +50,7 @@ class AuthProvider extends ChangeNotifier {
       _setLoading(false);
       return true;
     }
-    _error = result['message'];
+    _error = result['message'] ?? 'Nieprawidłowy email lub hasło';
     _setLoading(false);
     return false;
   }

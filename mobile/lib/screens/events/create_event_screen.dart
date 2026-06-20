@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import '../../config/app_styles.dart';
 import '../../services/api_service.dart';
 import '../../config/constants.dart';
+import '../../widgets/common_widgets.dart';
 
 class CreateEventScreen extends StatefulWidget {
   const CreateEventScreen({super.key});
@@ -62,86 +64,128 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Nowe wydarzenie')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
-                controller: _titleCtrl,
-                decoration: const InputDecoration(labelText: 'Nazwa wydarzenia', prefixIcon: Icon(Icons.event)),
-                validator: (v) => v == null || v.isEmpty ? 'Podaj nazwę' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _amountCtrl,
-                decoration: const InputDecoration(labelText: 'Kwota (PLN)', prefixIcon: Icon(Icons.attach_money)),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Podaj kwotę';
-                  if (double.tryParse(v) == null) return 'Nieprawidłowa kwota';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _category,
-                decoration: const InputDecoration(labelText: 'Kategoria'),
-                items: categoryEmoji.entries
-                    .map((e) => DropdownMenuItem(value: e.key, child: Text('${e.value} ${e.key}')))
-                    .toList(),
-                onChanged: (v) => setState(() => _category = v!),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<CityLocation>(
-                value: _location,
-                decoration: const InputDecoration(
-                  labelText: 'Lokalizacja',
-                  prefixIcon: Icon(Icons.location_on),
+              AppCard(
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _titleCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Nazwa wydarzenia',
+                        prefixIcon: Icon(Icons.event_outlined),
+                      ),
+                      validator: (v) => v == null || v.isEmpty ? 'Podaj nazwę' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _amountCtrl,
+                      decoration: const InputDecoration(
+                        labelText: 'Kwota (zł)',
+                        prefixIcon: Icon(Icons.payments_outlined),
+                      ),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Podaj kwotę';
+                        if (double.tryParse(v) == null) return 'Nieprawidłowa kwota';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: _category,
+                      decoration: const InputDecoration(labelText: 'Kategoria'),
+                      items: categoryEmoji.entries
+                          .map((e) => DropdownMenuItem(value: e.key, child: Text('${e.value} ${e.key}')))
+                          .toList(),
+                      onChanged: (v) => setState(() => _category = v!),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<CityLocation>(
+                      value: _location,
+                      decoration: const InputDecoration(
+                        labelText: 'Lokalizacja',
+                        prefixIcon: Icon(Icons.location_on_outlined),
+                      ),
+                      items: cityLocations.map((c) => DropdownMenuItem(value: c, child: Text(c.name))).toList(),
+                      onChanged: (v) => setState(() => _location = v!),
+                    ),
+                    const SizedBox(height: 8),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.calendar_today_outlined, color: AppColors.primary),
+                      title: const Text('Data wydarzenia'),
+                      subtitle: Text('${_date.day}.${_date.month}.${_date.year}'),
+                      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+                      onTap: () async {
+                        final d = await showDatePicker(
+                          context: context,
+                          initialDate: _date,
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime(2030),
+                        );
+                        if (d != null) setState(() => _date = d);
+                      },
+                    ),
+                  ],
                 ),
-                items: cityLocations
-                    .map((c) => DropdownMenuItem(value: c, child: Text(c.name)))
-                    .toList(),
-                onChanged: (v) => setState(() => _location = v!),
               ),
-              const SizedBox(height: 16),
-              ListTile(
-                leading: const Icon(Icons.calendar_today),
-                title: Text('Data: ${_date.day}.${_date.month}.${_date.year}'),
-                onTap: () async {
-                  final d = await showDatePicker(
-                      context: context, initialDate: _date, firstDate: DateTime(2020), lastDate: DateTime(2030));
-                  if (d != null) setState(() => _date = d);
-                },
-                contentPadding: EdgeInsets.zero,
-              ),
-              const Divider(),
-              Text('Uczestnicy (${_selectedIds.length} wybrano)',
-                  style: Theme.of(context).textTheme.titleSmall),
-              const SizedBox(height: 8),
+              const SizedBox(height: 20),
+              SectionHeader(title: 'Uczestnicy (${_selectedIds.length})'),
+              const SizedBox(height: 10),
               if (_friends.isEmpty)
-                const Text('Brak znajomych. Dodaj znajomych najpierw.', style: TextStyle(color: Colors.grey))
+                const AppCard(
+                  child: EmptyState(
+                    icon: Icons.people_outline,
+                    title: 'Brak znajomych',
+                    subtitle: 'Dodaj znajomych przed utworzeniem wydarzenia',
+                  ),
+                )
               else
                 ..._friends.map((f) {
                   final id = f['_id'];
                   final name = f['name'] ?? '';
-                  return CheckboxListTile(
-                    value: _selectedIds.contains(id),
-                    title: Text(name),
-                    subtitle: Text(f['email'] ?? ''),
-                    onChanged: (checked) {
+                  final selected = _selectedIds.contains(id);
+                  return AppCard(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    onTap: () {
                       setState(() {
-                        if (checked == true) _selectedIds.add(id);
-                        else _selectedIds.remove(id);
+                        if (selected) {
+                          _selectedIds.remove(id);
+                        } else {
+                          _selectedIds.add(id);
+                        }
                       });
                     },
-                    contentPadding: EdgeInsets.zero,
+                    color: selected ? AppColors.primary.withValues(alpha: 0.06) : AppColors.surface,
+                    child: Row(
+                      children: [
+                        UserAvatar(name: name, color: selected ? AppColors.primary : AppColors.textSecondary),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                              Text(f['email'] ?? '', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          selected ? Icons.check_circle_rounded : Icons.circle_outlined,
+                          color: selected ? AppColors.primary : AppColors.textMuted,
+                        ),
+                      ],
+                    ),
                   );
                 }),
               const SizedBox(height: 24),
               _loading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
                   : ElevatedButton(onPressed: _submit, child: const Text('Utwórz wydarzenie')),
             ],
           ),

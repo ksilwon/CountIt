@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../config/app_styles.dart';
 import '../../providers/auth_provider.dart';
+import '../../widgets/common_widgets.dart';
 import '../dashboard/dashboard_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -48,35 +50,47 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                TextFormField(
-                  controller: _nameCtrl,
-                  decoration: const InputDecoration(labelText: 'Imię', prefixIcon: Icon(Icons.person)),
-                  validator: (v) => v == null || v.isEmpty ? 'Podaj imię' : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _emailCtrl,
-                  decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email)),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (v) => v == null || !v.contains('@') ? 'Podaj prawidłowy email' : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _passCtrl,
-                  obscureText: true,
-                  decoration: const InputDecoration(labelText: 'Hasło (min. 6 znaków)', prefixIcon: Icon(Icons.lock)),
-                  validator: (v) => v == null || v.length < 6 ? 'Min. 6 znaków' : null,
-                ),
-                const SizedBox(height: 24),
-                loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : ElevatedButton(onPressed: _submit, child: const Text('Zarejestruj się')),
-              ],
+          child: AppCard(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Dołącz do CountIt',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text('Utwórz konto i zacznij dzielić wydatki', style: TextStyle(color: AppColors.textSecondary)),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: _nameCtrl,
+                    decoration: const InputDecoration(labelText: 'Imię', prefixIcon: Icon(Icons.person_outline_rounded)),
+                    validator: (v) => v == null || v.isEmpty ? 'Podaj imię' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _emailCtrl,
+                    decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_outlined)),
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (v) => v == null || !v.contains('@') ? 'Podaj prawidłowy email' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _passCtrl,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Hasło (min. 6 znaków)',
+                      prefixIcon: Icon(Icons.lock_outline_rounded),
+                    ),
+                    validator: (v) => v == null || v.length < 6 ? 'Min. 6 znaków' : null,
+                  ),
+                  const SizedBox(height: 28),
+                  loading
+                      ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                      : ElevatedButton(onPressed: _submit, child: const Text('Zarejestruj się')),
+                ],
+              ),
             ),
           ),
         ),

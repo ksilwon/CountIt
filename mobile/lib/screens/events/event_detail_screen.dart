@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../config/app_styles.dart';
 import '../../models/event.dart';
 import '../../models/settlement.dart';
 import '../../services/api_service.dart';
 import '../../providers/auth_provider.dart';
-import '../../config/constants.dart';
+import '../../widgets/common_widgets.dart';
 
 class EventDetailScreen extends StatefulWidget {
   final String eventId;
@@ -57,7 +58,11 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   Widget build(BuildContext context) {
     final myId = context.read<AuthProvider>().user?.id ?? '';
 
-    if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      );
+    }
 
     final event = _event!;
     final isPayer = event.createdBy.id == myId;
@@ -65,110 +70,152 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(event.title)),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         children: [
-          // Info o wydarzeniu
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
+          AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    CategoryBadge(category: event.category, size: 56),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            event.title,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+                          ),
+                          const SizedBox(height: 4),
+                          Text('Płaci: ${event.createdBy.name}', style: const TextStyle(color: AppColors.textSecondary)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _infoBox('Łącznie', '${event.amount.toStringAsFixed(2)} zł', AppColors.textPrimary),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _infoBox('Na osobę', '${event.splitAmount.toStringAsFixed(2)} zł', AppColors.primary),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(AppRadius.sm),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.location_on_outlined, size: 16, color: AppColors.textMuted),
+                      const SizedBox(width: 6),
+                      Text(event.locationName, style: const TextStyle(color: AppColors.textSecondary)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          SectionHeader(title: 'Rozliczenia (${_settlements.length})'),
+          const SizedBox(height: 12),
+          ..._settlements.map((s) {
+            final isMe = s.participant.id == myId;
+
+            return AppCard(
+              margin: const EdgeInsets.only(bottom: 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Text(categoryEmoji[event.category] ?? '📦', style: const TextStyle(fontSize: 32)),
+                      UserAvatar(name: s.participant.name, radius: 18),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(event.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                            Text('Płacący: ${event.createdBy.name}', style: const TextStyle(color: Colors.grey)),
+                            Text(
+                              s.participant.name,
+                              style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                            ),
+                            const SizedBox(height: 4),
+                            StatusChip(status: s.status),
                           ],
                         ),
                       ),
+                      AmountLabel(amount: s.amount, suffix: 'zł'),
                     ],
                   ),
-                  const Divider(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Łącznie: ${event.amount.toStringAsFixed(2)} PLN', style: const TextStyle(fontSize: 16)),
-                      Text('Na osobę: ${event.splitAmount.toStringAsFixed(2)} PLN',
-                          style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(Icons.location_on, size: 16, color: Colors.grey.shade500),
-                      const SizedBox(width: 4),
-                      Text(event.locationName, style: TextStyle(color: Colors.grey.shade600)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text('Rozliczenia (${_settlements.length})', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          ..._settlements.map((s) {
-            final isMe = s.participant.id == myId;
-            final statusE = statusEmoji[s.status] ?? '❓';
-            final statusL = statusLabel[s.status] ?? s.status;
-
-            return Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                  if (isMe && s.status == 'PENDING') ...[
+                    const SizedBox(height: 14),
+                    ElevatedButton(
+                      onPressed: () => _doAction('claim', s.id),
+                      style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 44)),
+                      child: const Text('Oddałem pieniądze'),
+                    ),
+                  ],
+                  if (isPayer && s.status == 'CLAIMED') ...[
+                    const SizedBox(height: 14),
                     Row(
                       children: [
-                        Text(statusE, style: const TextStyle(fontSize: 20)),
-                        const SizedBox(width: 8),
                         Expanded(
-                          child: Text(s.participant.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          child: ElevatedButton(
+                            onPressed: () => _doAction('confirm', s.id),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.success,
+                              minimumSize: const Size(0, 44),
+                            ),
+                            child: const Text('Potwierdź'),
+                          ),
                         ),
-                        Text('${s.amount.toStringAsFixed(2)} PLN'),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => _doAction('reject', s.id),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.error,
+                              side: const BorderSide(color: AppColors.error),
+                              minimumSize: const Size(0, 44),
+                            ),
+                            child: const Text('Odrzuć'),
+                          ),
+                        ),
                       ],
                     ),
-                    Text(statusL, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                    const SizedBox(height: 8),
-                    // Akcje dla uczestnika
-                    if (isMe && s.status == 'PENDING')
-                      ElevatedButton(
-                        onPressed: () => _doAction('claim', s.id),
-                        style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 36)),
-                        child: const Text('✅ Oddałem'),
-                      ),
-                    // Akcje dla płacącego
-                    if (isPayer && s.status == 'CLAIMED')
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () => _doAction('confirm', s.id),
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                              child: const Text('✅ Potwierdź'),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () => _doAction('reject', s.id),
-                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                              child: const Text('❌ Odrzuć'),
-                            ),
-                          ),
-                        ],
-                      ),
                   ],
-                ),
+                ],
               ),
             );
           }),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoBox(String label, String value, Color valueColor) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+          const SizedBox(height: 4),
+          Text(value, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: valueColor)),
         ],
       ),
     );
