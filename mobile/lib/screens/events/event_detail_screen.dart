@@ -95,7 +95,15 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     children: [
                       Text('Łącznie: ${event.amount.toStringAsFixed(2)} PLN', style: const TextStyle(fontSize: 16)),
                       Text('Na osobę: ${event.splitAmount.toStringAsFixed(2)} PLN',
-                          style: const TextStyle(fontSize: 16, color: Colors.deepPurple, fontWeight: FontWeight.bold)),
+                          style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on, size: 16, color: Colors.grey.shade500),
+                      const SizedBox(width: 4),
+                      Text(event.locationName, style: TextStyle(color: Colors.grey.shade600)),
                     ],
                   ),
                 ],

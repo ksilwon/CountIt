@@ -8,7 +8,7 @@ const router = express.Router();
 // POST /events — utwórz wydarzenie i auto-split rozliczeń
 router.post('/', protect, async (req, res) => {
   try {
-    const { title, amount, category, date, participants } = req.body;
+    const { title, amount, category, date, participants, locationName, latitude, longitude } = req.body;
 
     if (!title || !amount) {
       return res.status(400).json({ success: false, message: 'Nazwa i kwota są wymagane' });
@@ -24,6 +24,9 @@ router.post('/', protect, async (req, res) => {
       date: date || new Date(),
       createdBy: req.user._id,
       participants,
+      locationName: locationName || 'Warszawa',
+      latitude: latitude ?? 52.2297,
+      longitude: longitude ?? 21.0122,
     });
 
     // Utwórz rozliczenia dla każdego uczestnika

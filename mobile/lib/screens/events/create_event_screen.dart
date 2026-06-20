@@ -15,6 +15,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
   final _amountCtrl = TextEditingController();
   String _category = 'inne';
   DateTime _date = DateTime.now();
+  CityLocation _location = cityLocations.first;
   List<dynamic> _friends = [];
   List<String> _selectedIds = [];
   bool _loading = false;
@@ -43,6 +44,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
       category: _category,
       date: _date,
       participantIds: _selectedIds,
+      locationName: _location.name,
+      latitude: _location.latitude,
+      longitude: _location.longitude,
     );
     setState(() => _loading = false);
     if (!mounted) return;
@@ -88,6 +92,18 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     .map((e) => DropdownMenuItem(value: e.key, child: Text('${e.value} ${e.key}')))
                     .toList(),
                 onChanged: (v) => setState(() => _category = v!),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<CityLocation>(
+                value: _location,
+                decoration: const InputDecoration(
+                  labelText: 'Lokalizacja',
+                  prefixIcon: Icon(Icons.location_on),
+                ),
+                items: cityLocations
+                    .map((c) => DropdownMenuItem(value: c, child: Text(c.name)))
+                    .toList(),
+                onChanged: (v) => setState(() => _location = v!),
               ),
               const SizedBox(height: 16),
               ListTile(

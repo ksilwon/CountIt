@@ -41,6 +41,9 @@ class EventService {
     required String category,
     required DateTime date,
     required List<String> participantIds,
+    String locationName = 'Warszawa',
+    double latitude = 52.2297,
+    double longitude = 21.0122,
   }) async {
     final headers = await _headers();
     final res = await http.post(
@@ -52,6 +55,9 @@ class EventService {
         'category': category,
         'date': date.toIso8601String(),
         'participants': participantIds,
+        'locationName': locationName,
+        'latitude': latitude,
+        'longitude': longitude,
       }),
     );
     return jsonDecode(res.body);

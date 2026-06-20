@@ -51,15 +51,29 @@ class _SplashRouterState extends State<_SplashRouter> {
     final auth = context.watch<AuthProvider>();
 
     if (auth.isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('CountIt', style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold)),
-              SizedBox(height: 20),
-              CircularProgressIndicator(),
-            ],
+      return Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                const Color(0xFFF5F6FA),
+              ],
+            ),
+          ),
+          child: const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('CountIt', style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold, letterSpacing: -1)),
+                SizedBox(height: 8),
+                Text('Dziel wydatki w grupie', style: TextStyle(color: Colors.grey, fontSize: 15)),
+                SizedBox(height: 32),
+                CircularProgressIndicator(),
+              ],
+            ),
           ),
         ),
       );

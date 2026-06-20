@@ -38,6 +38,19 @@ const eventSchema = new mongoose.Schema(
     splitAmount: {
       type: Number,
     },
+    locationName: {
+      type: String,
+      trim: true,
+      default: 'Warszawa',
+    },
+    latitude: {
+      type: Number,
+      default: 52.2297,
+    },
+    longitude: {
+      type: Number,
+      default: 21.0122,
+    },
   },
   { timestamps: true }
 );

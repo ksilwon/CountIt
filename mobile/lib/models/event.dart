@@ -10,6 +10,9 @@ class Event {
   final User createdBy;
   final List<User> participants;
   final bool isSettled;
+  final String locationName;
+  final double latitude;
+  final double longitude;
 
   Event({
     required this.id,
@@ -21,6 +24,9 @@ class Event {
     required this.createdBy,
     required this.participants,
     this.isSettled = false,
+    this.locationName = 'Warszawa',
+    this.latitude = 52.2297,
+    this.longitude = 21.0122,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) => Event(
@@ -35,5 +41,8 @@ class Event {
             .map((p) => User.fromJson(p))
             .toList(),
         isSettled: json['isSettled'] ?? false,
+        locationName: json['locationName'] ?? 'Warszawa',
+        latitude: (json['latitude'] ?? 52.2297).toDouble(),
+        longitude: (json['longitude'] ?? 21.0122).toDouble(),
       );
 }
