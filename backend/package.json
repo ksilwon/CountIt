@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
+    "build:web": "cd ../mobile && flutter build web --base-href / && rsync -a --delete build/web/ ../backend/public/",
     "test": "jest --runInBand --forceExit"
   },
   "dependencies": {
