@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../config/app_palette.dart';
 import '../../config/app_styles.dart';
 import '../../services/api_service.dart';
 import '../../widgets/common_widgets.dart';
@@ -53,6 +54,7 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
   }
 
   Widget _friendTile(String name, String email, {Widget? trailing}) {
+    final palette = context.palette;
     return AppCard(
       margin: const EdgeInsets.only(bottom: 10),
       child: Row(
@@ -63,9 +65,9 @@ class _FriendsScreenState extends State<FriendsScreen> with SingleTickerProvider
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                Text(name, style: TextStyle(fontWeight: FontWeight.w700, color: palette.textPrimary)),
                 const SizedBox(height: 2),
-                Text(email, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                Text(email, style: TextStyle(color: palette.textSecondary, fontSize: 13)),
               ],
             ),
           ),

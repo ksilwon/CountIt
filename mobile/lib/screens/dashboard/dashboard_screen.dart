@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../../config/app_palette.dart';
 import '../../config/app_styles.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/api_service.dart';
@@ -67,6 +68,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     final recentEvents = _dashboardData['recentEvents'] as List<dynamic>? ?? [];
     final isPositive = net >= 0;
     final isZero = net.abs() < 0.01;
+    final palette = context.palette;
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -196,17 +198,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                           children: [
                             Text(
                               e['title'] ?? '',
-                              style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                              style: TextStyle(fontWeight: FontWeight.w700, color: palette.textPrimary),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               '${e['amount']} zł · ${e['createdBy']?['name'] ?? ''}',
-                              style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                              style: TextStyle(color: palette.textSecondary, fontSize: 13),
                             ),
                           ],
                         ),
                       ),
-                      const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+                      Icon(Icons.chevron_right_rounded, color: palette.textMuted),
                     ],
                   ),
                 ),
